@@ -1,0 +1,21 @@
+# fly.toml file generated for live-raffle on 2023-04-14T18:03:40+01:00
+
+app = "live-raffle"
+kill_signal = "SIGTERM"
+primary_region = "mad"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = "80"
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = "443"
+
+[env]
+  PHX_HOST = "live-raffle.fly.dev"
+  PORT = "8080"

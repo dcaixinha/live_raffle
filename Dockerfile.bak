@@ -1,0 +1,30 @@
+FROM hexpm/elixir:1.14.4-erlang-25.3-debian-bullseye-20230227-slim
+
+ARG app_path="/home/app/service"
+
+ENV APP_PATH ${app_path}
+ENV LANG=C.UTF-8
+ENV MIX_ENV=prod
+ENV HTTP_PORT=4000
+
+RUN apt-get -q update \
+    && apt-get -qy --no-install-recommends install \
+      openssl \
+      ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN adduser --disabled-password --gecos '' app
+
+WORKDIR ${APP_PATH}
+
+RUN chown -R app:app ${APP_PATH}
+
+USER app:app
+
+ARG RELEASE_DIR
+COPY --chown=app:app ${RELEASE_DIR} ./
+
+EXPOSE ${HTTP_PORT}
+
+CMD ["bin/live_raffle", "start"]

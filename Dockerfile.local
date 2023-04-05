@@ -1,0 +1,36 @@
+FROM hexpm/elixir:1.14.4-erlang-25.3-debian-bullseye-20230227-slim
+
+ARG run_deps="inotify-tools ca-certificates"
+
+ARG mix_env="dev"
+ARG http_port="4000"
+ARG hex_repo_key=""
+
+USER root
+
+ENV TERM xterm
+
+ENV HTTP_PORT ${http_port}
+ENV MIX_ENV ${mix_env}
+ENV ERL_AFLAGS "-kernel shell_history enabled"
+ENV REFRESHED_AT 2023-04-05
+
+RUN apt-get -q update \
+  && apt-get -qy --no-install-recommends install ${run_deps} \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && adduser --disabled-password --gecos "" app
+
+USER app:app
+
+WORKDIR /home/app/service
+
+RUN /usr/local/bin/mix local.hex --force \
+  && /usr/local/bin/mix local.rebar --force \
+  && /usr/local/bin/mix hex.info
+
+COPY --chown=app:app . .
+
+EXPOSE ${HTTP_PORT}
+
+CMD ["sh", "scripts/start.sh"]
